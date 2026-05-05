@@ -138,10 +138,12 @@ function ProductsSection() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <button className="btn-primary flex items-center gap-2">
+              <a href="https://gestor-estudiantes-production.up.railway.app" target="_blank" rel="noopener noreferrer" className="btn-primary flex items-center gap-2 hover:no-underline">
                 Ver Demo <ArrowRight size={16} />
-              </button>
-              <button className="btn-secondary">Documentación</button>
+              </a>
+              <a href="https://github.com/Josue-Benjumea/gestor-estudiantes" target="_blank" rel="noopener noreferrer" className="btn-secondary hover:no-underline">
+                Código Fuente
+              </a>
             </div>
           </FadeIn>
 
