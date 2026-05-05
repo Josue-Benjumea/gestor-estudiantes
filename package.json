@@ -11,7 +11,7 @@
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "seed": "cd backend && npm run seed",
     "start": "cd backend && npm start",
-    "start:prod": "cd backend && cross-env NODE_ENV=production node src/index.js",
+    "start:prod": "cd backend && cross-env NODE_ENV=production node src/config/migrate-fk.js && cross-env NODE_ENV=production node src/index.js",
     "deploy": "npm run build && npm run start:prod"
   },
   "devDependencies": {

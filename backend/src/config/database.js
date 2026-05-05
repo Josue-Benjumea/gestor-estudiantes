@@ -111,7 +111,7 @@ function createTables() {
       period_id INTEGER NOT NULL,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
-      FOREIGN KEY (professor_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (professor_id) REFERENCES users(id) ON DELETE SET NULL,
       FOREIGN KEY (period_id) REFERENCES academic_periods(id) ON DELETE CASCADE
     );
 

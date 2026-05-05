@@ -4,7 +4,7 @@ export class GradesController {
   /** Upsert a single grade */
   upsert(req, res, next) {
     try {
-      const grade = gradesService.upsertGrade(req.body);
+      const grade = gradesService.upsertGrade(req.body, req.user.id);
       res.json({ success: true, data: grade });
     } catch (error) { next(error); }
   }
@@ -13,7 +13,7 @@ export class GradesController {
   bulkGrade(req, res, next) {
     try {
       const { grades } = req.body;
-      const result = gradesService.bulkGrade(parseInt(req.params.activityId), grades);
+      const result = gradesService.bulkGrade(parseInt(req.params.activityId), grades, req.user.id);
       res.json({ success: true, data: result, message: 'Calificaciones guardadas' });
     } catch (error) { next(error); }
   }

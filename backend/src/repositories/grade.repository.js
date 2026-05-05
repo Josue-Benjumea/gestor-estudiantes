@@ -65,7 +65,7 @@ export class GradeRepository {
       JOIN activities a ON a.id = gr.activity_id
       JOIN subjects s ON s.id = a.subject_id
       JOIN academic_periods ap ON ap.id = a.period_id
-      JOIN users u ON u.id = a.professor_id
+      LEFT JOIN users u ON u.id = a.professor_id
       WHERE gr.student_id = ?
       ORDER BY ap.id DESC, s.name, a.created_at DESC
     `).all(studentId);

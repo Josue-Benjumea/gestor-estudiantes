@@ -8,7 +8,7 @@ export class ActivityRepository {
   findAll({ professor_id, period_id, subject_id }) {
     const db = getDatabase();
     let query = `
-      SELECT a.*, 
+      SELECT DISTINCT a.*, 
         s.name as subject_name,
         u.first_name as professor_first_name, u.last_name as professor_last_name,
         ap.name as period_name, ap.is_active as period_active,
@@ -18,13 +18,20 @@ export class ActivityRepository {
          WHERE ag2.activity_id = a.id) as student_count
       FROM activities a
       JOIN subjects s ON s.id = a.subject_id
-      JOIN users u ON u.id = a.professor_id
+      LEFT JOIN users u ON u.id = a.professor_id
       JOIN academic_periods ap ON ap.id = a.period_id
+      LEFT JOIN activity_groups ag ON ag.activity_id = a.id
       WHERE 1=1
     `;
     const params = [];
 
-    if (professor_id) { query += ' AND a.professor_id = ?'; params.push(professor_id); }
+    if (professor_id) { 
+      query += ` AND (a.professor_id = ? OR EXISTS (
+        SELECT 1 FROM professor_assignments pa
+        WHERE pa.professor_id = ? AND pa.subject_id = a.subject_id AND pa.group_id = ag.group_id
+      ))`; 
+      params.push(professor_id, professor_id); 
+    }
     if (period_id) { query += ' AND a.period_id = ?'; params.push(period_id); }
     if (subject_id) { query += ' AND a.subject_id = ?'; params.push(subject_id); }
 
@@ -41,7 +48,7 @@ export class ActivityRepository {
         ap.name as period_name, ap.is_active as period_active
       FROM activities a
       JOIN subjects s ON s.id = a.subject_id
-      JOIN users u ON u.id = a.professor_id
+      LEFT JOIN users u ON u.id = a.professor_id
       JOIN academic_periods ap ON ap.id = a.period_id
       WHERE a.id = ?
     `).get(id);

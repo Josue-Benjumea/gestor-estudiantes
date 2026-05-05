@@ -1,20 +1,41 @@
 import { gradeRepository } from '../repositories/grade.repository.js';
 import { activityRepository } from '../repositories/activity.repository.js';
 import { periodRepository } from '../repositories/period.repository.js';
+import { userRepository } from '../repositories/user.repository.js';
 
 /**
  * Grades Service - Business logic for grade management.
  * Grades are linked to activities. Averages are computed per subject.
  */
 export class GradesService {
+
+  _verifyProfessorAccess(activity, professorId) {
+    if (!professorId) return; // Ignore if called without professorId (e.g. from internal scripts)
+    const assignments = userRepository.getProfessorAssignments(professorId);
+    const activityGroups = activityRepository.getActivityGroups(activity.id);
+    
+    // Professor must be assigned to the activity's subject AND to at least one of its groups
+    const hasAccess = activityGroups.some(g => 
+      assignments.some(a => a.subject_id === activity.subject_id && a.group_id === g.id)
+    );
+    
+    if (!hasAccess) {
+      const error = new Error('No tienes permisos para calificar esta actividad (no estás asignado a su materia y grupo)');
+      error.status = 403;
+      throw error;
+    }
+  }
+
   /** Upsert a single grade */
-  upsertGrade({ student_id, activity_id, grade, comments }) {
+  upsertGrade({ student_id, activity_id, grade, comments }, professorId) {
     const activity = activityRepository.findById(activity_id);
     if (!activity) {
       const error = new Error('Actividad no encontrada');
       error.status = 404;
       throw error;
     }
+    this._verifyProfessorAccess(activity, professorId);
+
     const period = periodRepository.findById(activity.period_id);
     if (!period || !period.is_active) {
       const error = new Error('Solo se pueden registrar notas en el periodo activo');
@@ -25,13 +46,15 @@ export class GradesService {
   }
 
   /** Bulk upsert grades for an activity */
-  bulkGrade(activityId, grades) {
+  bulkGrade(activityId, grades, professorId) {
     const activity = activityRepository.findById(activityId);
     if (!activity) {
       const error = new Error('Actividad no encontrada');
       error.status = 404;
       throw error;
     }
+    this._verifyProfessorAccess(activity, professorId);
+
     const period = periodRepository.findById(activity.period_id);
     if (!period || !period.is_active) {
       const error = new Error('Solo se pueden registrar notas en el periodo activo');
@@ -62,7 +85,7 @@ export class GradesService {
         periods[g.period_id].subjects[subjectKey] = {
           subject_id: g.subject_id,
           subject_name: g.subject_name,
-          professor: `${g.professor_first_name} ${g.professor_last_name}`,
+          professor: g.professor_first_name ? `${g.professor_first_name} ${g.professor_last_name}` : 'Sin profesor',
           activities: [],
           average: 0,
         };
