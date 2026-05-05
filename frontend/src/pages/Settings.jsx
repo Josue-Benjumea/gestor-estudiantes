@@ -5,8 +5,6 @@ import { settingsApi } from '../api';
 import { useToastStore } from '../store/toastStore';
 import Topbar from '../components/layout/Topbar';
 
-const API_BASE = 'http://localhost:3001';
-
 export default function InstitutionSettings() {
   const { addToast } = useToastStore();
   const fileRef = useRef(null);
@@ -30,7 +28,7 @@ export default function InstitutionSettings() {
       setInstitutionName(nameRes.data.data);
       if (settingsRes.data.data.institution_logo) {
         setHasLogo(true);
-        setLogoUrl(`${API_BASE}${settingsApi.getInstitutionLogo()}`);
+        setLogoUrl(settingsApi.getInstitutionLogo());
       }
     } catch {
       // Settings not yet configured
@@ -49,7 +47,7 @@ export default function InstitutionSettings() {
       await settingsApi.uploadLogo(formData);
       addToast('Logo actualizado exitosamente', 'success');
       setHasLogo(true);
-      setLogoUrl(`${API_BASE}${settingsApi.getInstitutionLogo()}`);
+      setLogoUrl(settingsApi.getInstitutionLogo());
     } catch (err) {
       addToast(err.response?.data?.message || 'Error al subir logo', 'error');
     } finally {
