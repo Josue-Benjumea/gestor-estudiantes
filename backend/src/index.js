@@ -26,6 +26,18 @@ const app = express();
 // Initialize database (auto-creates tables)
 initDatabase();
 
+// Auto-seed if database is empty (first deploy)
+import bcrypt from 'bcryptjs';
+const _db = (await import('./config/database.js')).getDatabase();
+const userCount = _db.prepare('SELECT COUNT(*) as count FROM users').get();
+if (userCount.count === 0) {
+  console.log('🌱 Empty database detected — creating admin user...');
+  const hash = bcrypt.hashSync('Admin123!', 10);
+  _db.prepare('INSERT INTO users (email, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)')
+    .run('admin@school.com', hash, 'Carlos', 'Administrador', 'admin');
+  console.log('✅ Admin created: admin@school.com / Admin123!');
+}
+
 // ─── Middleware ─────────────────────────────────────────────
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(express.json());
