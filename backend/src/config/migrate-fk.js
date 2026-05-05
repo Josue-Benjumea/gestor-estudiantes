@@ -1,10 +1,8 @@
 import { initDatabase, getDatabase } from './database.js';
 
-async function migrate() {
+export async function migrateDatabase() {
   console.log('🔄 Starting database migration: activities foreign key...');
   
-  // Initialize connection
-  initDatabase();
   const db = getDatabase();
 
   try {
@@ -14,13 +12,10 @@ async function migrate() {
     
     if (profFk && profFk.on_delete === 'SET NULL') {
       console.log('✅ Migration already applied. Skipping.');
-      process.exit(0);
+      return;
     }
 
     console.log('⚠️ Migration needed. Proceeding...');
-    
-    // SQLite doesn't support ALTER TABLE DROP CONSTRAINT.
-    // We must recreate the table, copy data, and swap them.
     
     db.exec('PRAGMA foreign_keys=OFF;');
     const transaction = db.transaction(() => {
@@ -59,12 +54,8 @@ async function migrate() {
     db.exec('PRAGMA foreign_keys=ON;');
 
     console.log('✅ Migration completed successfully.');
-    process.exit(0);
   } catch (error) {
     console.error('❌ Migration failed:', error);
     db.exec('PRAGMA foreign_keys=ON;');
-    process.exit(1);
   }
 }
-
-migrate();

@@ -26,6 +26,10 @@ const app = express();
 // Initialize database (auto-creates tables)
 initDatabase();
 
+// Run schema migration (e.g. FK updates)
+import { migrateDatabase } from './config/migrate-fk.js';
+await migrateDatabase();
+
 // Auto-seed if database is empty (first deploy)
 import bcrypt from 'bcryptjs';
 const _db = (await import('./config/database.js')).getDatabase();
